@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Analitik Toko Game Digital | GameStore Analytics</title>
+  <meta name="description" content="Dashboard analitik toko game digital interaktif yang menampilkan KPI, tren penjualan bulanan, distribusi marketplace, pendapatan per platform, produk terlaris, dan status stok secara real-time." />
+  <meta name="author" content="GameStore Analytics" />
+  <meta name="keywords" content="analitik, toko game digital, dashboard, penjualan, platform, KPI" />
+  <meta property="og:title" content="Dashboard Analitik Toko Game Digital" />
+  <meta property="og:description" content="Pantau performa toko game digital Anda secara real-time." />
+  <meta property="og:type" content="website" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'brand-purple': '#6366f1',
+            'brand-cyan':   '#22d3ee',
+            'brand-pink':   '#f472b6',
+            'brand-green':  '#4ade80',
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" />
+</head>
+
+<body class="dark">
+<div class="dashboard-wrapper">
+
+  <!-- LOADING OVERLAY -->
+  <div id="loading-overlay"
+       class="fixed inset-0 z-50 flex items-center justify-center"
+       style="background:rgba(10,14,26,0.95);backdrop-filter:blur(8px);">
+    <div class="text-center">
+      <div style="font-size:3rem;margin-bottom:1rem;animation:pulse-glow 1.5s infinite;">🎮</div>
+      <div style="font-size:1rem;font-weight:700;color:#f0f4ff;margin-bottom:0.5rem;">Memuat Dashboard...</div>
+      <div style="font-size:0.78rem;color:#8b95b0;">Menyiapkan data analitik toko Anda</div>
+      <div style="margin-top:1.5rem;display:flex;justify-content:center;gap:0.4rem;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#6366f1;animation:blink 1.2s 0s infinite;display:inline-block;"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:#6366f1;animation:blink 1.2s 0.2s infinite;display:inline-block;"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:#6366f1;animation:blink 1.2s 0.4s infinite;display:inline-block;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="header" role="banner">
+    <div class="header-inner">
+      <div class="logo-group">
+        <div class="logo-icon" aria-hidden="true">🎮</div>
+        <div>
+          <div class="logo-title">GameStore Analytics</div>
+          <div class="logo-subtitle">Dashboard Analitik Toko Game Digital</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="live-badge" aria-label="Status: data langsung">
+          <span class="live-dot"></span>
+          LIVE
+        </div>
+        <div class="header-date" id="header-time" aria-live="polite">Memuat waktu...</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- KONTEN UTAMA -->
+  <main class="main-content" role="main">
+
+    <!-- Judul Bagian -->
+    <div class="mb-6">
+      <div class="section-label">📊 Ringkasan Performa</div>
+      <h1 class="section-title">Dashboard Analitik Toko Game Digital</h1>
+      <p class="section-desc">Pantau KPI, tren penjualan, dan performa produk Anda secara real-time</p>
+    </div>
+
+    <!-- PANEL FILTER -->
+    <section class="filter-panel" aria-label="Panel Filter">
+      <div class="filter-header">
+        <span aria-hidden="true">🔍</span>
+        Filter Dashboard
+      </div>
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label class="filter-label" for="filter-platform">🖥️ Platform Marketplace</label>
+          <select id="filter-platform" class="filter-select" aria-label="Filter berdasarkan platform">
+            <option value="all">Semua Platform</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filter-category">🎯 Kategori Game</label>
+          <select id="filter-category" class="filter-select" aria-label="Filter berdasarkan kategori game">
+            <option value="all">Semua Kategori</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filter-date-from">📅 Tanggal Mulai</label>
+          <input type="date" id="filter-date-from" class="filter-input" aria-label="Tanggal mulai filter" style="color-scheme:dark;" />
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filter-date-to">📅 Tanggal Akhir</label>
+          <input type="date" id="filter-date-to" class="filter-input" aria-label="Tanggal akhir filter" style="color-scheme:dark;" />
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">&nbsp;</div>
+          <button id="btn-reset" class="btn-reset" aria-label="Reset semua filter">↺ Reset Filter</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- KARTU KPI -->
+    <section aria-label="Indikator Kinerja Utama">
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-revenue animate-in" role="article">
+          <div class="kpi-top">
+            <div class="kpi-icon" aria-hidden="true">💰</div>
+            <div class="kpi-badge up">▲ 12.4%</div>
+          </div>
+          <div class="kpi-value" id="kpi-revenue" aria-live="polite">Rp 0</div>
+          <div class="kpi-title">Total Pendapatan</div>
+        </div>
+        <div class="kpi-card kpi-trx animate-in" role="article">
+          <div class="kpi-top">
+            <div class="kpi-icon" aria-hidden="true">🧾</div>
+            <div class="kpi-badge up">▲ 8.7%</div>
+          </div>
+          <div class="kpi-value" id="kpi-trx" aria-live="polite">0</div>
+          <div class="kpi-title">Total Transaksi</div>
+        </div>
+        <div class="kpi-card kpi-items animate-in" role="article">
+          <div class="kpi-top">
+            <div class="kpi-icon" aria-hidden="true">🛒</div>
+            <div class="kpi-badge up">▲ 15.2%</div>
+          </div>
+          <div class="kpi-value" id="kpi-items" aria-live="polite">0 item</div>
+          <div class="kpi-title">Total Item Terjual</div>
+        </div>
+        <div class="kpi-card kpi-aov animate-in" role="article">
+          <div class="kpi-top">
+            <div class="kpi-icon" aria-hidden="true">📈</div>
+            <div class="kpi-badge down">▼ 2.1%</div>
+          </div>
+          <div class="kpi-value" id="kpi-aov" aria-live="polite">Rp 0</div>
+          <div class="kpi-title">Rata-rata Nilai Pesanan (AOV)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BARIS CHART 1: Tren Penjualan Bulanan -->
+    <section class="charts-row" aria-label="Tren Penjualan Bulanan">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <div class="chart-title">📉 Tren Penjualan Bulanan</div>
+            <div class="chart-subtitle">Pendapatan kumulatif per bulan dari semua transaksi</div>
+          </div>
+          <span class="chart-badge">📅 2025</span>
+        </div>
+        <div class="chart-container" style="height:280px;">
+          <canvas id="chart-monthly" aria-label="Grafik tren penjualan bulanan"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- BARIS CHART 1B: Marketplace Distribution Chart -->
+    <section class="charts-row two-col" aria-label="Distribusi dan Perbandingan Marketplace">
+
+      <!-- Radar Chart: Perbandingan Multi-Metrik antar Platform -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <div class="chart-title">🕸️ Distribusi Marketplace</div>
+            <div class="chart-subtitle">Perbandingan Revenue, Transaksi &amp; Item antar platform (dinormalisasi)</div>
+          </div>
+          <span class="chart-badge">Radar View</span>
+        </div>
+        <div class="chart-container" style="height:310px;">
+          <canvas id="chart-marketplace-radar" aria-label="Radar chart distribusi marketplace"></canvas>
+        </div>
+      </div>
+
+      <!-- Polar Area Chart: Pangsa Pasar Berdasarkan Item Terjual -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <div class="chart-title">🎯 Pangsa Pasar Platform</div>
+            <div class="chart-subtitle">Distribusi item terjual &amp; transaksi per saluran penjualan</div>
+          </div>
+          <span class="chart-badge">Market Share</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:center;">
+          <div class="chart-container" style="height:260px;">
+            <canvas id="chart-marketplace-polar" aria-label="Polar area chart pangsa pasar platform"></canvas>
+          </div>
+          <div id="marketplace-legend" class="stock-legend" aria-label="Legenda pangsa pasar platform">
+            <!-- Diisi JavaScript -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- BARIS CHART 2: Platform & Top Produk -->
+    <section class="charts-row main-side" aria-label="Pendapatan Platform dan Produk Terlaris">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <div class="chart-title">🖥️ Pendapatan per Platform Marketplace</div>
+            <div class="chart-subtitle">Perbandingan total pendapatan dari setiap platform</div>
+          </div>
+          <span class="chart-badge">🏆 Peringkat</span>
+        </div>
+        <div class="chart-container" style="height:280px;">
+          <canvas id="chart-platform" aria-label="Grafik pendapatan per platform marketplace"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <div class="chart-title">🏅 Produk Digital Terlaris</div>
+            <div class="chart-subtitle">Berdasarkan total pendapatan</div>
+          </div>
+          <span class="chart-badge">Top 7</span>
+        </div>
+        <div id="top-products-list" class="product-list" aria-label="Daftar produk digital terlaris">
+          <!-- Diisi JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- BARIS CHART 3: Status Stok & Info Platform -->
+    <section class="charts-row two-col" aria-label="Status Stok dan Info Platform">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <div class="chart-title">📦 Distribusi Status Stok</div>
+            <div class="chart-subtitle">Kondisi ketersediaan stok semua produk digital</div>
+          </div>
+          <span class="chart-badge">Inventaris</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:center;">
+          <div class="chart-container" style="height:200px;">
+            <canvas id="chart-stock" aria-label="Grafik distribusi status stok produk"></canvas>
+          </div>
+          <div id="stock-legend" class="stock-legend" aria-label="Legenda status stok">
+            <!-- Diisi JavaScript -->
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <div class="chart-title">⚡ Ringkasan Platform</div>
+            <div class="chart-subtitle">Revenue &amp; transaksi per marketplace aktif</div>
+          </div>
+          <span class="chart-badge">Info</span>
+        </div>
+        <!-- [FIX #5] Diisi JavaScript secara dinamis -->
+        <div id="platform-summary-list" style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.25rem;" aria-label="Ringkasan platform marketplace">
+        </div>
+      </div>
+    </section>
+
+    <!-- TABEL TRANSAKSI TERBARU -->
+    <section class="chart-card" aria-label="Tabel Transaksi Terbaru">
+      <div class="chart-header">
+        <div class="chart-title-group">
+          <div class="chart-title">🧾 Riwayat Transaksi Terbaru</div>
+          <div class="chart-subtitle">
+            Menampilkan <span id="trx-count" style="color:var(--accent-purple);font-weight:600;">0 transaksi</span> sesuai filter aktif (maks. 10 baris)
+          </div>
+        </div>
+        <span class="chart-badge">📋 Detail</span>
+      </div>
+      <div class="table-wrapper">
+        <table class="trx-table" role="table" aria-label="Tabel riwayat transaksi">
+          <thead>
+            <tr>
+              <th scope="col">ID Transaksi</th>
+              <th scope="col">Tanggal</th>
+              <th scope="col">Platform</th>
+              <th scope="col">Kategori</th>
+              <th scope="col">Produk</th>
+              <th scope="col" style="text-align:center;">Qty</th>
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+          <tbody id="trx-tbody">
+            <!-- Diisi JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" role="contentinfo">
+    <p>
+      Dibuat dengan ❤️ menggunakan <span>HTML</span>, <span>Tailwind CSS</span>,
+      <span>Vanilla JS</span> &amp; <span>Chart.js</span> &mdash;
+      &copy; 2025 <span>GameStore Analytics</span>. Semua hak dilindungi.
+    </p>
+  </footer>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>
